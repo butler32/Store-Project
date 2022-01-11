@@ -10,8 +10,8 @@ using Store.Infrastructure.Data;
 namespace Store.Infrastructure.Migrations
 {
     [DbContext(typeof(StoreDbContext))]
-    [Migration("20220110175057_init")]
-    partial class init
+    [Migration("20220111162637_Init")]
+    partial class Init
     {
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
@@ -36,37 +36,22 @@ namespace Store.Infrastructure.Migrations
                     b.ToTable("GameUser");
                 });
 
-            modelBuilder.Entity("RoleUser", b =>
+            modelBuilder.Entity("Store.Core.Entities.FriendRequest", b =>
                 {
-                    b.Property<int>("RolesId")
+                    b.Property<int>("RequestedById")
                         .HasColumnType("int");
 
-                    b.Property<int>("UsersId")
-                        .HasColumnType("int");
-
-                    b.HasKey("RolesId", "UsersId");
-
-                    b.HasIndex("UsersId");
-
-                    b.ToTable("RoleUser");
-                });
-
-            modelBuilder.Entity("Store.Core.Entities.Friend", b =>
-                {
-                    b.Property<int>("FirstUserId")
-                        .HasColumnType("int");
-
-                    b.Property<int>("SecondUserId")
+                    b.Property<int>("RequestedToId")
                         .HasColumnType("int");
 
                     b.Property<int>("Status")
                         .HasColumnType("int");
 
-                    b.HasKey("FirstUserId", "SecondUserId", "Status");
+                    b.HasKey("RequestedById", "RequestedToId");
 
-                    b.HasIndex("SecondUserId");
+                    b.HasIndex("RequestedToId");
 
-                    b.ToTable("Friends");
+                    b.ToTable("FriendRequests");
                 });
 
             modelBuilder.Entity("Store.Core.Entities.Game", b =>
@@ -100,6 +85,21 @@ namespace Store.Infrastructure.Migrations
                     b.ToTable("Games");
                 });
 
+            modelBuilder.Entity("Store.Core.Entities.Member", b =>
+                {
+                    b.Property<int>("UserId")
+                        .HasColumnType("int");
+
+                    b.Property<int>("RoleId")
+                        .HasColumnType("int");
+
+                    b.HasKey("UserId", "RoleId");
+
+                    b.HasIndex("RoleId");
+
+                    b.ToTable("Member");
+                });
+
             modelBuilder.Entity("Store.Core.Entities.Role", b =>
                 {
                     b.Property<int>("Id")
@@ -107,16 +107,8 @@ namespace Store.Infrastructure.Migrations
                         .HasColumnType("int")
                         .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
 
-                    b.Property<bool>("IsAdmin")
-                        .HasColumnType("bit");
-
-                    b.Property<bool>("IsDeveloper")
-                        .HasColumnType("bit");
-
-                    b.Property<bool>("IsModerator")
-                        .HasColumnType("bit");
-
-                    b.Property<bool>("IsSupport")
+                    b.Property<bool>("Name")
+                        .HasMaxLength(50)
                         .HasColumnType("bit");
 
                     b.HasKey("Id");
@@ -126,16 +118,22 @@ namespace Store.Infrastructure.Migrations
 
             modelBuilder.Entity("Store.Core.Entities.SupportCase", b =>
                 {
-                    b.Property<int>("UserId")
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int")
+                        .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
+
+                    b.Property<int>("InitiatorId")
                         .HasColumnType("int");
 
                     b.Property<int>("SupportId")
                         .HasColumnType("int");
 
-                    b.Property<int>("MessageId")
-                        .HasColumnType("int");
+                    b.HasKey("Id");
 
-                    b.HasKey("UserId", "SupportId", "MessageId");
+                    b.HasIndex("InitiatorId");
+
+                    b.HasIndex("SupportId");
 
                     b.ToTable("SupportCases");
                 });
@@ -152,16 +150,10 @@ namespace Store.Infrastructure.Migrations
                         .HasMaxLength(500)
                         .HasColumnType("nvarchar(500)");
 
+                    b.Property<int>("MessageType")
+                        .HasColumnType("int");
+
                     b.Property<int>("SupportCaseId")
-                        .HasColumnType("int");
-
-                    b.Property<int>("SupportCaseMessageId")
-                        .HasColumnType("int");
-
-                    b.Property<int>("SupportCaseSupportId")
-                        .HasColumnType("int");
-
-                    b.Property<int>("SupportCaseUserId")
                         .HasColumnType("int");
 
                     b.Property<DateTime>("Time")
@@ -169,7 +161,7 @@ namespace Store.Infrastructure.Migrations
 
                     b.HasKey("Id");
 
-                    b.HasIndex("SupportCaseUserId", "SupportCaseSupportId", "SupportCaseMessageId");
+                    b.HasIndex("SupportCaseId");
 
                     b.ToTable("SupportMessages");
                 });
@@ -196,29 +188,7 @@ namespace Store.Infrastructure.Migrations
                         .HasColumnType("nchar(128)")
                         .IsFixedLength(true);
 
-                    b.Property<int?>("SupportCaseMessageId")
-                        .HasColumnType("int");
-
-                    b.Property<int?>("SupportCaseMessageId1")
-                        .HasColumnType("int");
-
-                    b.Property<int?>("SupportCaseSupportId")
-                        .HasColumnType("int");
-
-                    b.Property<int?>("SupportCaseSupportId1")
-                        .HasColumnType("int");
-
-                    b.Property<int?>("SupportCaseUserId")
-                        .HasColumnType("int");
-
-                    b.Property<int?>("SupportCaseUserId1")
-                        .HasColumnType("int");
-
                     b.HasKey("Id");
-
-                    b.HasIndex("SupportCaseUserId", "SupportCaseSupportId", "SupportCaseMessageId");
-
-                    b.HasIndex("SupportCaseUserId1", "SupportCaseSupportId1", "SupportCaseMessageId1");
 
                     b.ToTable("Users");
                 });
@@ -238,69 +208,95 @@ namespace Store.Infrastructure.Migrations
                         .IsRequired();
                 });
 
-            modelBuilder.Entity("RoleUser", b =>
+            modelBuilder.Entity("Store.Core.Entities.FriendRequest", b =>
                 {
-                    b.HasOne("Store.Core.Entities.Role", null)
-                        .WithMany()
-                        .HasForeignKey("RolesId")
+                    b.HasOne("Store.Core.Entities.User", "RequestedBy")
+                        .WithMany("SentFriendRequests")
+                        .HasForeignKey("RequestedById")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("Store.Core.Entities.User", "RequestedTo")
+                        .WithMany("ReceievedFriendRequests")
+                        .HasForeignKey("RequestedToId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.HasOne("Store.Core.Entities.User", null)
-                        .WithMany()
-                        .HasForeignKey("UsersId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
+                    b.Navigation("RequestedBy");
+
+                    b.Navigation("RequestedTo");
                 });
 
-            modelBuilder.Entity("Store.Core.Entities.Friend", b =>
+            modelBuilder.Entity("Store.Core.Entities.Member", b =>
                 {
-                    b.HasOne("Store.Core.Entities.User", "FirstUser")
-                        .WithMany()
-                        .HasForeignKey("FirstUserId")
+                    b.HasOne("Store.Core.Entities.Role", "Role")
+                        .WithMany("Members")
+                        .HasForeignKey("RoleId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.HasOne("Store.Core.Entities.User", "SecondUser")
-                        .WithMany()
-                        .HasForeignKey("SecondUserId")
+                    b.HasOne("Store.Core.Entities.User", "User")
+                        .WithMany("Members")
+                        .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.Navigation("FirstUser");
+                    b.Navigation("Role");
 
-                    b.Navigation("SecondUser");
+                    b.Navigation("User");
+                });
+
+            modelBuilder.Entity("Store.Core.Entities.SupportCase", b =>
+                {
+                    b.HasOne("Store.Core.Entities.User", "Initiator")
+                        .WithMany("InitiatedСases")
+                        .HasForeignKey("InitiatorId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("Store.Core.Entities.User", "Support")
+                        .WithMany("SupportedСases")
+                        .HasForeignKey("SupportId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("Initiator");
+
+                    b.Navigation("Support");
                 });
 
             modelBuilder.Entity("Store.Core.Entities.SupportMessage", b =>
                 {
                     b.HasOne("Store.Core.Entities.SupportCase", "SupportCase")
                         .WithMany("Messages")
-                        .HasForeignKey("SupportCaseUserId", "SupportCaseSupportId", "SupportCaseMessageId")
+                        .HasForeignKey("SupportCaseId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
                     b.Navigation("SupportCase");
                 });
 
-            modelBuilder.Entity("Store.Core.Entities.User", b =>
+            modelBuilder.Entity("Store.Core.Entities.Role", b =>
                 {
-                    b.HasOne("Store.Core.Entities.SupportCase", null)
-                        .WithMany("Support")
-                        .HasForeignKey("SupportCaseUserId", "SupportCaseSupportId", "SupportCaseMessageId");
-
-                    b.HasOne("Store.Core.Entities.SupportCase", null)
-                        .WithMany("User")
-                        .HasForeignKey("SupportCaseUserId1", "SupportCaseSupportId1", "SupportCaseMessageId1");
+                    b.Navigation("Members");
                 });
 
             modelBuilder.Entity("Store.Core.Entities.SupportCase", b =>
                 {
                     b.Navigation("Messages");
+                });
 
-                    b.Navigation("Support");
+            modelBuilder.Entity("Store.Core.Entities.User", b =>
+                {
+                    b.Navigation("InitiatedСases");
 
-                    b.Navigation("User");
+                    b.Navigation("Members");
+
+                    b.Navigation("ReceievedFriendRequests");
+
+                    b.Navigation("SentFriendRequests");
+
+                    b.Navigation("SupportedСases");
                 });
 #pragma warning restore 612, 618
         }
