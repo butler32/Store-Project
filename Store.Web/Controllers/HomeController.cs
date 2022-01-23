@@ -1,5 +1,6 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
+using Store.Web.Interfaces;
 using Store.Web.Models;
 using System;
 using System.Collections.Generic;
@@ -11,19 +12,22 @@ namespace Store.Web.Controllers
 {
     public class HomeController : Controller
     {
+        private readonly IGameViewModelService gameViewModelService;
         private readonly ILogger<HomeController> _logger;
 
-        public HomeController(ILogger<HomeController> logger)
+        public HomeController(ILogger<HomeController> logger, IGameViewModelService gameViewModelService)
         {
             _logger = logger;
+            this.gameViewModelService = gameViewModelService;
         }
 
         public IActionResult Index()
         {
-            return View();
+            var games = gameViewModelService.GetTen();
+            return View(games);
         }
 
-        public IActionResult Privacy()
+        public IActionResult Libriary()
         {
             return View();
         }

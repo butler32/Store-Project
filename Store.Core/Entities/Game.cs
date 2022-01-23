@@ -14,6 +14,7 @@ namespace Store.Core.Entities
         public int Discont { get; set; }
         public bool Approved { get; set; }
         public string Developer { get; set; }
-        public ICollection<User> Users { get; set; }
+        public ICollection<Libriary> Libriaries { get; set; }
+        public ICollection<Cart> Carts { get; set; }
     }
 }

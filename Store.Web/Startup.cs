@@ -5,7 +5,12 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using Store.Core.Interfaces;
 using Store.Infrastructure.Data;
+using Store.Infrastructure.Data.Repositories;
+using Store.Web.Interfaces;
+using Store.Web.Services;
+using Store.Core.Services;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -26,6 +31,13 @@ namespace Store.Web
         public void ConfigureServices(IServiceCollection services)
         {
             services.AddDbContext<StoreDbContext>(option => option.UseSqlServer(Configuration.GetConnectionString("StoreDataBase")));
+
+            services.AddScoped(typeof(IRepository<>), typeof(EfRepository<>));
+
+            services.AddScoped<IGameService, GameService>();
+
+            services.AddScoped<IGameViewModelService, GameViewModelService>();
+
             services.AddControllersWithViews();
         }
 

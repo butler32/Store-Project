@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Store.Core.Entities.Enums;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -13,5 +14,6 @@ namespace Store.Core.Entities
         public SupportCase SupportCase { get; set; }
         public int SupportCaseId { get; set; }
         public DateTime Time { get; set; }
+        public SupportMessageType MessageType { get; set; }
     }
 }

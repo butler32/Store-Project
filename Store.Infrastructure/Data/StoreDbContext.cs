@@ -16,12 +16,12 @@ namespace Store.Infrastructure.Data
         public DbSet<SupportMessage> SupportMessages { get; set; }
         public DbSet<Role> Roles { get; set; }
         public DbSet<Game> Games { get; set; }
-        public DbSet<Friend> Friends { get; set; }
+        public DbSet<FriendRequest> FriendRequests { get; set; }
+        public DbSet<Member> Members { get; set; }
 
-        protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
-        {
-            optionsBuilder.UseSqlServer("Server=localhost\\MSSQLSERVER01;Database=StoreDataBase;Trusted_Connection=True;");
-        }
+        public StoreDbContext(DbContextOptions<StoreDbContext> options)
+            : base(options)
+        { }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
@@ -30,7 +30,10 @@ namespace Store.Infrastructure.Data
             new RoleConfiguration().Configure(modelBuilder.Entity<Role>());
             new SupportMessageConfiguration().Configure(modelBuilder.Entity<SupportMessage>());
             new SupportCaseConfiguration().Configure(modelBuilder.Entity<SupportCase>());
-            new FriendConfiguration().Configure(modelBuilder.Entity <Friend>());
+            new FriendRequestConfiguration().Configure(modelBuilder.Entity<FriendRequest>());
+            new MemberConfiguration().Configure(modelBuilder.Entity<Member>());
+            new LibriaryConfiguration().Configure(modelBuilder.Entity<Libriary>());
+            new CartConfiguration().Configure(modelBuilder.Entity<Cart>());
         }
     }
 }

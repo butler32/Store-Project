@@ -6,11 +6,21 @@ using System.Threading.Tasks;
 
 namespace Store.Core.Interfaces
 {
-    interface IRepository<TEntity> 
-        where TEntity : class
+    public interface IRepository<T> 
+        where T : class
     {
-        public TEntity Get(int id);
+        public T Get(int id);
 
-        public IList<TEntity> Get(ISpecification<TEntity> specification);
+        public T Get(ISpecification<T> specification);
+
+        public IList<T> List();
+
+        public IList<T> List(ISpecification<T> specification);
+
+        public T Add(T entity);
+
+        public void Update(T entity);
+
+        public void Delete(T entity);
     }
 }

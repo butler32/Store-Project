@@ -1,10 +1,5 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using Store.Core.Entities;
 
 namespace Store.Infrastructure.Data.Configuration
@@ -14,7 +9,19 @@ namespace Store.Infrastructure.Data.Configuration
         public void Configure(EntityTypeBuilder<SupportCase> builder)
         {
             builder
-                .HasKey(p => new { p.UserId, p.SupportId, p.MessageId });
+                .HasKey(sc => sc.Id);
+
+            builder
+                .HasOne(sc => sc.Initiator)
+                .WithMany(u => u.InitiatedСases)
+                .HasForeignKey(sc => sc.InitiatorId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            builder
+                .HasOne(sc => sc.Support)
+                .WithMany(u => u.SupportedСases)
+                .HasForeignKey(sc => sc.SupportId)
+                .OnDelete(DeleteBehavior.Restrict);
         }
     }
 }

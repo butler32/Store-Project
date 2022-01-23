@@ -1,8 +1,38 @@
-﻿@{
+﻿@model IEnumerable<GameViewModel>
+
+@{
     ViewData["Title"] = "Home Page";
 }
 
+
+
 <div class="text-center">
-    <h1 class="display-4">Welcome</h1>
-    <p>Learn about <a href="https://docs.microsoft.com/aspnet/core">building Web apps with ASP.NET Core</a>.</p>
+    <h1 class="display-4">Store page</h1>
+    <div id="game_images" class="carousel slide" data-ride="carousel">
+        @{ int i = 0;
+            <div class="carousel-inner">
+                @foreach (var game in Model)
+                {
+                    <div id="@game.Id" class="carousel-item @(i++ == 0 ? "active" : null)">
+                        <p class=" text-center">@game.Name</p>
+                    </div>
+                }
+            </div>
+        }
+        <a class="carousel-control-prev" href="#game_images" data-slide="prev">
+            <span class="carousel-control-prev-icon"></span>
+        </a>
+        <a class="carousel-control-next" href="#game_images" data-slide="next">
+            <span class="carousel-control-next-icon"></span>
+        </a>
+    </div>
+    <button asp-route-id="" type="button" class="btn btn-primary">Go on a game page</button>
+    <div class="card" style="width: 18rem;">
+        <img src="https://store.my.games/hotbox/showcase/game/picture/de863d3e-23c0-4c07-a120-fc808dbee21b.jpg" class="card-img-top" alt="...">
+        <div class="card-body">
+            <h5 class="card-title">Dota 2</h5>
+            <p class="card-text">Dota.</p>
+            <a asp-route-id="2" asp-area="" asp-controller="Store" asp-action="GamePage" class="btn btn-primary">Go on a game page</a>
+        </div>
+    </div>
 </div>
