@@ -1,10 +1,5 @@
 ﻿using Store.Core.Entities;
 using Store.Core.Interfaces;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace Store.Core.Services
 {
@@ -15,6 +10,13 @@ namespace Store.Core.Services
         public GameService(IRepository<Game> gameRepository)
         {
             this.gameRepositury = gameRepository;
+        }
+
+        public int Add(Game game)
+        {
+            gameRepositury.Add(game);
+
+            return game.Id;
         }
 
         public Game Get(int id)

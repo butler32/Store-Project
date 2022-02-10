@@ -1,9 +1,18 @@
-﻿@*
-    For more information on enabling MVC for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
-*@
-@{
-}
+﻿@model UserViewModel
 
 <div class="text-center">
     <h1 class="display-4">Support page</h1>
 </div>
+
+@if (Model.RoleIds.Contains(4) || Model.RoleIds.Contains(3))
+{
+    <a class="btn btn-primary" asp-controller="Support" asp-action="GetAppeals">
+        View appeals
+    </a>
+}
+<a class="btn btn-primary" asp-controller="Support" asp-action="StartAppeal">
+    Start appeal
+</a>
+<a class="btn btn-primary" asp-controller="Support" asp-action="GetMyAppeals">
+    View my appeals
+</a>

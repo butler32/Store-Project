@@ -1,0 +1,43 @@
+﻿@model FriendsViewModel
+
+<a asp-controller="Account" asp-action="RequestedFriends" class="btn btn-primary">
+    Watch requests
+</a>
+
+<form method="post">
+    <input type="search" name="name" />
+    <input type="submit" asp-controller="Account" asp-action="SearchFriend" class="btn btn-primary" />
+</form>
+
+@foreach (var user in Model.FriendsRecieved)
+{
+    <div class="container">
+        <div class="row">
+            <div class="col">
+                <a asp-controller="Account" asp-action="ElseAccountPage" asp-route-userId="@user.Id">
+                    <img width="150" height="150" src="~/Images/UserAvatar/@user.Avatar" />
+                </a>
+            </div>
+            <div class="col-8">
+                <h1 class="text-left">@user.Nickname</h1>
+            </div>
+            <div class="col"></div>
+        </div>
+    </div>
+}
+@foreach (var user in Model.FriendsRequested)
+{
+    <div class="container">
+        <div class="row">
+            <div class="col">
+                <a asp-controller="Account" asp-action="ElseAccountPage" asp-route-userId="@user.Id">
+                    <img width="150" height="150" src="~/Images/UserAvatar/@user.Avatar" />
+                </a>
+            </div>
+            <div class="col-8">
+                <h1 class="text-left">@user.Nickname</h1>
+            </div>
+            <div class="col"></div>
+        </div>
+    </div>
+}

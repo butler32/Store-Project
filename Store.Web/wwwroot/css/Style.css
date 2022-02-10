@@ -1,0 +1,41 @@
+﻿.carousel-control-prev-icon {
+    background-image: url(images/left-arrow.svg);
+}
+
+.carousel-control-next-icon {
+    background-image : url(images/right-arrow.svg);
+}
+
+.carousel-control-prev {
+    left: -100px;
+}
+
+.carousel-control-next {
+    right: -90px;
+}
+
+#addGameBotton {
+    padding-top: 10px;
+}
+
+#storeCarusel {
+    padding-bottom: 30px;
+}
+
+#buyBotton {
+    padding-top: 30px;
+
+}
+
+#gamePrice {
+    padding-left: -50px;
+}
+
+#addToCartBotton {
+    margin-left: 80%;
+}
+
+.image-input {
+    border: 0px;
+    padding: 0px;
+}

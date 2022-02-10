@@ -1,0 +1,17 @@
+﻿@model ICollection<GameViewModel>
+
+@foreach (var game in Model)
+{
+    <div class="container">
+        <div class="row">
+            <div class="col">
+                <a asp-route-id="@game.Id" asp-controller="Store" asp-action="GamePage">
+                    <img src="~/Images/GameImages/@game.Screenshots[0]" alt="Image unavailable" width="300" height="200" />
+                </a>
+            </div>
+            <div class="col-8">
+                <h1 class="text-left">@game.Name</h1>
+            </div>
+        </div>
+    </div>
+}

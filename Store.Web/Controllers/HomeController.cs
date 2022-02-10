@@ -2,11 +2,7 @@
 using Microsoft.Extensions.Logging;
 using Store.Web.Interfaces;
 using Store.Web.Models;
-using System;
-using System.Collections.Generic;
 using System.Diagnostics;
-using System.Linq;
-using System.Threading.Tasks;
 
 namespace Store.Web.Controllers
 {
@@ -23,13 +19,8 @@ namespace Store.Web.Controllers
 
         public IActionResult Index()
         {
-            var games = gameViewModelService.GetTen();
+            var games = gameViewModelService.List();
             return View(games);
-        }
-
-        public IActionResult Libriary()
-        {
-            return View();
         }
 
         [ResponseCache(Duration = 0, Location = ResponseCacheLocation.None, NoStore = true)]

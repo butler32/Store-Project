@@ -1,27 +1,45 @@
-﻿using Microsoft.AspNetCore.Mvc;
-using System;
+﻿using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Mvc;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
-using System.Linq;
-using System.Threading.Tasks;
+using System.Diagnostics.CodeAnalysis;
 
 namespace Store.Web.Models
 {
-    public class GameViewModel
+    public class GameViewModel : IEqualityComparer<GameViewModel>
     {
         [HiddenInput]
-        public int Id { get; set; }
+        public int? Id { get; set; }
 
-        [Display(Name = "Название")]
+        [Required, Display(Name = "Название")]
         public string Name { get; set; }
 
-        [Display(Name = "Цена")]
+        [Required, Display(Name = "Цена")]
         [DataType(DataType.Currency)]
-        public int Price { get; set; }
+        public float Price { get; set; }
 
-        public int Discont { get; set; }
+        public float Discont { get; set; }
 
-        [Display(Name = "Разработчик")]
+        [Required, Display(Name = "Разработчик")]
         public string Developer { get; set; }
+
+        public string[] Screenshots { get; set; }
+
+        [Required]
+        public ICollection<IFormFile> Files { get; set; }
+
+        public bool IsApproved { get; set; }
+        
+        public int DeveloperId { get; set; }
+
+        public bool Equals(GameViewModel x, GameViewModel y)
+        {
+            return x.Id == y.Id;
+        }
+
+        public int GetHashCode([DisallowNull] GameViewModel obj)
+        {
+            return obj.Id.GetHashCode();
+        }
     }
 }

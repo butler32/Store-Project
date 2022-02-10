@@ -1,0 +1,23 @@
+﻿@model ICollection<UserViewModel>
+
+@foreach (var user in Model)
+{
+    <div class="container">
+        <div class="row">
+            <div class="col">
+                <a asp-controller="Account" asp-action="ElseAccountPage" asp-route-userId="@user.Id">
+                    <img width="150" height="150" src="~/Images/UserAvatar/@user.Avatar" />
+                </a>
+            </div>
+            <div class="col-8">
+                <h1 class="text-left">@user.Nickname</h1>
+            </div>
+            <div class="col">
+                <form method="post">
+                    <input type="hidden" name="elseUserId" , value="@user.Id" />
+                    <input type="submit" asp-controller="Account" asp-action="AddFriend" class="btn btn-primary" value="Add friend" />
+                </form>
+            </div>
+        </div>
+    </div>
+}

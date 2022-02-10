@@ -1,10 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-using Store.Core.Entities.Enums;
+﻿using Store.Core.Entities.Enums;
 
 namespace Store.Core.Entities
 {

@@ -1,0 +1,47 @@
+﻿@model AccountPageViewModel
+
+<a asp-controller="Account" asp-action="Logout" class="btn btn-primary">Logout</a>
+
+<div class="container">
+    <div class="row">
+        <div class="col">
+            <img width="150" height="150" src="~/Images/UserAvatar/@Model.User.Avatar" />
+        </div>
+        <div class="col-6">
+            <h1 class="text-left">@Model.User.Nickname</h1>
+        </div>
+        <div class="col">
+            <p class="text-right">Balance: @Model.User.Balance$</p>
+        </div>
+        <div class="col">
+            <a asp-controller="Account" asp-action="EditProfile" type="button" class="btn btn-primary">
+                Edit profile
+            </a>
+        </div>
+    </div>
+</div>
+<div id="addGameBotton">
+    @if (Model.User.RoleIds.Contains(2) || Model.User.RoleIds.Contains(3))
+    {
+        <a asp-controller="Store" asp-action="AddGame" type="button" class="btn btn-primary">
+            Add Game
+        </a>
+        <a asp-controller="Store" asp-action="MakeDiscont" type="button" class="btn btn-primary">
+            Make discont
+        </a>
+    }
+    @if (Model.User.RoleIds.Contains(5) || Model.User.RoleIds.Contains(3))
+    {
+        <a asp-controller="Store" asp-action="CheckNotApprovedGames" type="button" class="btn btn-primary">
+            Approve games
+        </a>
+    }
+</div>
+
+@foreach (var game in Model.Games)
+{
+    <div>
+        <h1 class="text-left display-4">@game.Name</h1>
+        <img src="~/Images/GameImages/@game.Screenshots[0]" width="300" height="200" alt="Image unavailable" />
+    </div>
+}

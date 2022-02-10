@@ -1,0 +1,24 @@
+﻿@model AccountPageViewModel
+
+<div class="container">
+    <div class="row">
+        <div class="col">
+            <img width="150" height="150" src="~/Images/UserAvatar/@Model.User.Avatar" />
+        </div>
+        <div class="col-6">
+            <h1 class="text-left">@Model.User.Nickname</h1>
+        </div>
+        <div class="col">
+            <input type="hidden" name="elseUserId" value="@Model.User.Id" />
+            <input asp-controller="Account" asp-action="AddFriend" type="submit" class="btn btn-primary" value="Add friend" />
+        </div>
+    </div>
+</div>
+
+@foreach (var game in Model.Games)
+{
+    <div>
+        <h1 class="text-left display-4">@game.Name</h1>
+        <img src="~/Images/GameImages/@game.Screenshots[0]" width="300" height="200" alt="Image unavailable" />
+    </div>
+}

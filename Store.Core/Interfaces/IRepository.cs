@@ -1,8 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using System.Collections.Generic;
 
 namespace Store.Core.Interfaces
 {
@@ -11,11 +7,7 @@ namespace Store.Core.Interfaces
     {
         public T Get(int id);
 
-        public T Get(ISpecification<T> specification);
-
         public IList<T> List();
-
-        public IList<T> List(ISpecification<T> specification);
 
         public T Add(T entity);
 

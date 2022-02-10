@@ -1,0 +1,14 @@
+﻿@model ICollection<GameViewModel>
+
+
+<div class="text-center">
+    <h1 class="display-4">Your libriary</h1>
+</div>
+
+@foreach (var game in Model)
+{
+    <div>
+        <h1 class="text-left display-4">@game.Name</h1>
+        <img src="~/Images/GameImages/@game.Screenshots[0]" width="300" height="200" alt="Image unavailable" />
+    </div>
+}

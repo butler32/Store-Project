@@ -1,20 +1,31 @@
-﻿@model IEnumerable<GameViewModel>
+﻿@model StoreViewModel
 
 @{
     ViewData["Title"] = "Home Page";
 }
 
+<form method="post">
+    <input type="search" name="name" />
+    <input type="submit" asp-controller="Store" asp-action="SearchGame" class="btn btn-primary" />
+</form>
 
-
-<div class="text-center">
+<div class="text-center" id="storeCarusel">
     <h1 class="display-4">Store page</h1>
     <div id="game_images" class="carousel slide" data-ride="carousel">
         @{ int i = 0;
             <div class="carousel-inner">
-                @foreach (var game in Model)
+                @foreach (var game in Model.TenGames)
                 {
-                    <div id="@game.Id" class="carousel-item @(i++ == 0 ? "active" : null)">
-                        <p class=" text-center">@game.Name</p>
+                    if (game.IsApproved == false)
+                    {
+                        continue;
+                    }
+
+                    <div class="carousel-item @(i++ == 0 ? "active" : null)">
+                        <p class="text-left display-4">@game.Name</p>
+                        <a asp-route-id="@game.Id" asp-controller="Store" asp-action="GamePage">
+                            <img src="~/Images/GameImages/@game.Screenshots[0]" alt="Image unavailable" width="1100" height="500" />
+                        </a>
                     </div>
                 }
             </div>
@@ -26,13 +37,20 @@
             <span class="carousel-control-next-icon"></span>
         </a>
     </div>
-    <button asp-route-id="" type="button" class="btn btn-primary">Go on a game page</button>
-    <div class="card" style="width: 18rem;">
-        <img src="https://store.my.games/hotbox/showcase/game/picture/de863d3e-23c0-4c07-a120-fc808dbee21b.jpg" class="card-img-top" alt="...">
-        <div class="card-body">
-            <h5 class="card-title">Dota 2</h5>
-            <p class="card-text">Dota.</p>
-            <a asp-route-id="2" asp-area="" asp-controller="Store" asp-action="GamePage" class="btn btn-primary">Go on a game page</a>
+</div>
+<div>
+    @foreach (var game in Model.ElseGames)
+    {
+        if (game.IsApproved == false)
+        {
+            continue;
+        }
+        <div>
+            <p class="text-left display-4">@game.Name</p>
+            <a asp-route-id="@game.Id" asp-controller="Store" asp-action="GamePage">
+                <img src="~/Images/GameImages/@game.Screenshots[0]" alt="Image unavailable" width="300" height="200" />
+            </a>
         </div>
-    </div>
+        
+    }
 </div>

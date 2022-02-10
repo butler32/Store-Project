@@ -1,0 +1,13 @@
+﻿@model SupportViewModel
+
+@foreach (var message in Model.Messages)
+{
+    <p>@(message.MessageType == Store.Core.Entities.Enums.SupportMessageType.Support ? "Support:" : "User:") @message.Message</p>
+    <p> </p>
+}
+
+<form method="post">
+    <input type="text" name="message" />
+    <input type="hidden" name="caseId" value="@Model.Id" />
+    <input type="submit" asp-controller="Support" asp-action="SendMessage" value="Send" class="btn btn-primary" />
+</form>

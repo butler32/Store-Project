@@ -1,0 +1,30 @@
+﻿@model ICollection<GameViewModel>
+
+<h1 class="display-3 text-center">Your Cart</h1>
+
+@{
+    float price = 0;
+    @foreach (var game in Model)
+    {
+        price += game.Price - game.Discont;
+        <div>
+            <h1 class="text-left display-4">@game.Name</h1>
+            <img src="~/Images/GameImages/@game.Screenshots[0]" width="300" height="200" alt="Image unavailable" />
+            <form method="post">
+                <input type="hidden" name="gameId" value="@game.Id" />
+                <input type="submit" asp-controller="Store" asp-action="DeleteFromCart" value="Delete" />
+            </form>
+        </div>
+    }
+    <form>
+        <div>
+            <h1 class="text-left display-4">Price: @(price == 0 ? "Free" : price + "$")</h1>
+            <a asp-controller="Store" asp-action="BuyFromCart" class="btn btn-primary">
+                Buy
+            </a>
+        </div>
+    </form>
+}
+
+
+

@@ -1,8 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using System.Collections.Generic;
 
 namespace Store.Core.Entities
 {
@@ -10,10 +6,12 @@ namespace Store.Core.Entities
     {
         public int Id { get; set; }
         public string Name { get; set; }
-        public int Price { get; set; }
-        public int Discont { get; set; }
-        public bool Approved { get; set; }
+        public float Price { get; set; }
+        public float Discont { get; set; }
+        public bool IsApproved { get; set; }
         public string Developer { get; set; }
+        public int DeveloperId { get; set; }
+        public ICollection<Screenshot> Screenshots { get; set; }
         public ICollection<Libriary> Libriaries { get; set; }
         public ICollection<Cart> Carts { get; set; }
     }

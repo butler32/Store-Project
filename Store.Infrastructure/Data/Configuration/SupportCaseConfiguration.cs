@@ -16,12 +16,6 @@ namespace Store.Infrastructure.Data.Configuration
                 .WithMany(u => u.InitiatedСases)
                 .HasForeignKey(sc => sc.InitiatorId)
                 .OnDelete(DeleteBehavior.Restrict);
-
-            builder
-                .HasOne(sc => sc.Support)
-                .WithMany(u => u.SupportedСases)
-                .HasForeignKey(sc => sc.SupportId)
-                .OnDelete(DeleteBehavior.Restrict);
         }
     }
 }

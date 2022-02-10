@@ -1,0 +1,11 @@
+﻿@model ICollection<SupportViewModel>
+
+@foreach (var Case in Model)
+{
+    <div>
+        <p>@Case.Messages.FirstOrDefault().Message</p>
+        <a asp-controller="Support" asp-action="GoToAppeal" asp-route-caseId="@Case.Id" class="btn btn-primary">
+            Go to appeal
+        </a>
+    </div>
+}

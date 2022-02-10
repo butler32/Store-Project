@@ -6,6 +6,7 @@
     <title>@ViewData["Title"] - Store.Web</title>
     <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
     <link rel="stylesheet" href="~/css/site.css" />
+    <link rel="stylesheet" href="~/css/Style.css" />
 </head>
 <body>
     <header>
@@ -19,7 +20,10 @@
                 <div class="navbar-collapse collapse d-sm-inline-flex justify-content-between">
                     <ul class="navbar-nav flex-grow-1">
                         <li class="nav-item">
-                            <a class="nav-link text-dark" asp-area="" asp-controller="Home" asp-action="Libriary">Libriary</a>
+                            <a class="nav-link text-dark" asp-area="" asp-controller="Store" asp-action="Libriary">Libriary</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link text-dark" asp-area="" asp-controller="Account" asp-action="Friends">Friends</a>
                         </li>
                         <li class="nav-item">
                             <a class="nav-link text-dark" asp-area="" asp-controller="Support" asp-action="Index">Support</a>
@@ -28,7 +32,7 @@
                     </ul>
                     <ul class="navbar-nav flex-grow-1">
                         <li class="nav-item text-right">
-                            <a class="nav-link text-dark" asp-area="" asp-controller="Account" asp-action="Cart">Cart</a>
+                            <a class="nav-link text-dark" asp-area="" asp-controller="Store" asp-action="Cart">Cart</a>
                         </li>
                         <li class="nav-item text-right">
                             <a class="nav-link text-dark" asp-area="" asp-controller="Account" asp-action="Index">Account</a>
@@ -46,7 +50,7 @@
 
     <footer class="border-top footer text-muted">
         <div class="container">
-            &copy; 2021 - Store.Web - <a asp-area="" asp-controller="Home" asp-action="Privacy">Privacy</a>
+            &copy; 2022 Store - All rights reserved.
         </div>
     </footer>
     <script src="~/lib/jquery/dist/jquery.min.js"></script>

@@ -1,9 +1,4 @@
 ﻿using Microsoft.EntityFrameworkCore;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using Store.Infrastructure.Data.Configuration;
 using Store.Core.Entities;
 
@@ -34,6 +29,9 @@ namespace Store.Infrastructure.Data
             new MemberConfiguration().Configure(modelBuilder.Entity<Member>());
             new LibriaryConfiguration().Configure(modelBuilder.Entity<Libriary>());
             new CartConfiguration().Configure(modelBuilder.Entity<Cart>());
+            new ImageConfiguration().Configure(modelBuilder.Entity<Image>());
+            new ScreenshotConfiguration().Configure(modelBuilder.Entity<Screenshot>());
+            new AvatarConfiguration().Configure(modelBuilder.Entity<Avatar>());
         }
     }
 }

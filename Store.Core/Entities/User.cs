@@ -1,8 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using System.Collections.Generic;
 
 namespace Store.Core.Entities
 {
@@ -13,6 +9,8 @@ namespace Store.Core.Entities
         public string Password { get; set; }
         public string Nickname { get; set; }
         public float Balance { get; set; }
+        public string Salt { get; set; }
+        public ICollection<Avatar> Avatars { get; set; }
         public ICollection<Libriary> Libriaries { get; set; }
         public ICollection<Cart> Carts { get; set; }
         public ICollection<Member> Members { get; set; }

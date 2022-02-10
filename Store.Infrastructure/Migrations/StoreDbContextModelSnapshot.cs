@@ -19,6 +19,21 @@ namespace Store.Infrastructure.Migrations
                 .HasAnnotation("ProductVersion", "5.0.12")
                 .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
 
+            modelBuilder.Entity("Store.Core.Entities.Avatar", b =>
+                {
+                    b.Property<int>("UserId")
+                        .HasColumnType("int");
+
+                    b.Property<int>("ImageId")
+                        .HasColumnType("int");
+
+                    b.HasKey("UserId", "ImageId");
+
+                    b.HasIndex("ImageId");
+
+                    b.ToTable("Avatar");
+                });
+
             modelBuilder.Entity("Store.Core.Entities.Cart", b =>
                 {
                     b.Property<int>("UserId")
@@ -59,28 +74,54 @@ namespace Store.Infrastructure.Migrations
                         .HasColumnType("int")
                         .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
 
-                    b.Property<bool>("Approved")
-                        .HasColumnType("bit");
-
                     b.Property<string>("Developer")
                         .IsRequired()
                         .HasMaxLength(50)
                         .HasColumnType("nvarchar(50)");
 
-                    b.Property<int>("Discont")
+                    b.Property<int>("DeveloperId")
                         .HasColumnType("int");
+
+                    b.Property<float>("Discont")
+                        .HasColumnType("real");
+
+                    b.Property<bool>("IsApproved")
+                        .HasColumnType("bit");
 
                     b.Property<string>("Name")
                         .IsRequired()
                         .HasMaxLength(50)
                         .HasColumnType("nvarchar(50)");
 
-                    b.Property<int>("Price")
-                        .HasColumnType("int");
+                    b.Property<float>("Price")
+                        .HasColumnType("real");
 
                     b.HasKey("Id");
 
                     b.ToTable("Games");
+                });
+
+            modelBuilder.Entity("Store.Core.Entities.Image", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int")
+                        .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
+
+                    b.Property<string>("Extension")
+                        .IsRequired()
+                        .HasMaxLength(5)
+                        .HasColumnType("nvarchar(5)");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasMaxLength(32)
+                        .HasColumnType("nchar(32)")
+                        .IsFixedLength(true);
+
+                    b.HasKey("Id");
+
+                    b.ToTable("Image");
                 });
 
             modelBuilder.Entity("Store.Core.Entities.Libriary", b =>
@@ -120,13 +161,29 @@ namespace Store.Infrastructure.Migrations
                         .HasColumnType("int")
                         .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
 
-                    b.Property<bool>("Name")
+                    b.Property<string>("Name")
+                        .IsRequired()
                         .HasMaxLength(50)
-                        .HasColumnType("bit");
+                        .HasColumnType("nvarchar(50)");
 
                     b.HasKey("Id");
 
                     b.ToTable("Roles");
+                });
+
+            modelBuilder.Entity("Store.Core.Entities.Screenshot", b =>
+                {
+                    b.Property<int>("GameId")
+                        .HasColumnType("int");
+
+                    b.Property<int>("ImageId")
+                        .HasColumnType("int");
+
+                    b.HasKey("GameId", "ImageId");
+
+                    b.HasIndex("ImageId");
+
+                    b.ToTable("Screenshot");
                 });
 
             modelBuilder.Entity("Store.Core.Entities.SupportCase", b =>
@@ -139,14 +196,14 @@ namespace Store.Infrastructure.Migrations
                     b.Property<int>("InitiatorId")
                         .HasColumnType("int");
 
-                    b.Property<int>("SupportId")
+                    b.Property<int?>("UserId")
                         .HasColumnType("int");
 
                     b.HasKey("Id");
 
                     b.HasIndex("InitiatorId");
 
-                    b.HasIndex("SupportId");
+                    b.HasIndex("UserId");
 
                     b.ToTable("SupportCases");
                 });
@@ -204,9 +261,31 @@ namespace Store.Infrastructure.Migrations
                         .HasColumnType("nchar(128)")
                         .IsFixedLength(true);
 
+                    b.Property<string>("Salt")
+                        .HasColumnType("nvarchar(max)");
+
                     b.HasKey("Id");
 
                     b.ToTable("Users");
+                });
+
+            modelBuilder.Entity("Store.Core.Entities.Avatar", b =>
+                {
+                    b.HasOne("Store.Core.Entities.Image", "Image")
+                        .WithMany("Avatars")
+                        .HasForeignKey("ImageId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("Store.Core.Entities.User", "User")
+                        .WithMany("Avatars")
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Image");
+
+                    b.Navigation("User");
                 });
 
             modelBuilder.Entity("Store.Core.Entities.Cart", b =>
@@ -285,6 +364,25 @@ namespace Store.Infrastructure.Migrations
                     b.Navigation("User");
                 });
 
+            modelBuilder.Entity("Store.Core.Entities.Screenshot", b =>
+                {
+                    b.HasOne("Store.Core.Entities.Game", "Game")
+                        .WithMany("Screenshots")
+                        .HasForeignKey("GameId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("Store.Core.Entities.Image", "Image")
+                        .WithMany("Screenshots")
+                        .HasForeignKey("ImageId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Game");
+
+                    b.Navigation("Image");
+                });
+
             modelBuilder.Entity("Store.Core.Entities.SupportCase", b =>
                 {
                     b.HasOne("Store.Core.Entities.User", "Initiator")
@@ -293,15 +391,11 @@ namespace Store.Infrastructure.Migrations
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
-                    b.HasOne("Store.Core.Entities.User", "Support")
+                    b.HasOne("Store.Core.Entities.User", null)
                         .WithMany("SupportedСases")
-                        .HasForeignKey("SupportId")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired();
+                        .HasForeignKey("UserId");
 
                     b.Navigation("Initiator");
-
-                    b.Navigation("Support");
                 });
 
             modelBuilder.Entity("Store.Core.Entities.SupportMessage", b =>
@@ -320,6 +414,15 @@ namespace Store.Infrastructure.Migrations
                     b.Navigation("Carts");
 
                     b.Navigation("Libriaries");
+
+                    b.Navigation("Screenshots");
+                });
+
+            modelBuilder.Entity("Store.Core.Entities.Image", b =>
+                {
+                    b.Navigation("Avatars");
+
+                    b.Navigation("Screenshots");
                 });
 
             modelBuilder.Entity("Store.Core.Entities.Role", b =>
@@ -334,6 +437,8 @@ namespace Store.Infrastructure.Migrations
 
             modelBuilder.Entity("Store.Core.Entities.User", b =>
                 {
+                    b.Navigation("Avatars");
+
                     b.Navigation("Carts");
 
                     b.Navigation("InitiatedСases");

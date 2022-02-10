@@ -16,4 +16,10 @@
     <ProjectReference Include="..\Store.Infrastructure\Store.Infrastructure.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Folder Include="wwwroot\css\images\" />
+    <Folder Include="wwwroot\Images\GameImages\" />
+    <Folder Include="wwwroot\Images\UserAvatar\" />
+  </ItemGroup>
+
 </Project>

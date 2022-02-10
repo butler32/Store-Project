@@ -1,10 +1,5 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using Store.Core.Entities;
 
 namespace Store.Infrastructure.Data.Configuration
@@ -30,7 +25,7 @@ namespace Store.Infrastructure.Data.Configuration
                 .IsRequired();
 
             builder
-                .Property(p => p.Approved)
+                .Property(p => p.IsApproved)
                 .IsRequired();
 
             builder

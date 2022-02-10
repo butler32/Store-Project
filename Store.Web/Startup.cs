@@ -15,17 +15,23 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Authentication.Cookies;
+using Microsoft.AspNetCore.Http;
+using Hotel.Infrastructure.Security;
+using Store.Infrastructure.FileSystem;
 
 namespace Store.Web
 {
     public class Startup
     {
-        public Startup(IConfiguration configuration)
+        public Startup(IConfiguration configuration, IWebHostEnvironment env)
         {
             Configuration = configuration;
+            Environment = env;
         }
 
         public IConfiguration Configuration { get; }
+        public IWebHostEnvironment Environment { get; }
 
         // This method gets called by the runtime. Use this method to add services to the container.
         public void ConfigureServices(IServiceCollection services)
@@ -34,11 +40,24 @@ namespace Store.Web
 
             services.AddScoped(typeof(IRepository<>), typeof(EfRepository<>));
 
+            services.AddScoped<IPasswordHasher, PasswordHasher>();
+
+            services.AddScoped<IFileStorage>(provider => new FileStorage(Environment.WebRootPath));
             services.AddScoped<IGameService, GameService>();
+            services.AddScoped<IUserService, UserService>();
 
             services.AddScoped<IGameViewModelService, GameViewModelService>();
+            services.AddScoped<ISupportViewModelService, SupportViewModelService>();
+            services.AddScoped<IUserViewModelService, UserViewModelService>();
 
             services.AddControllersWithViews();
+
+            services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme)
+                .AddCookie(options =>
+                {
+                    options.LoginPath = new PathString("/Account/Index");
+                    options.AccessDeniedPath = new PathString("/Account/Index");
+                });
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
@@ -59,6 +78,7 @@ namespace Store.Web
 
             app.UseRouting();
 
+            app.UseAuthentication();
             app.UseAuthorization();
 
             app.UseEndpoints(endpoints =>
