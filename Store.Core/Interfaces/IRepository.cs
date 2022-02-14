@@ -2,7 +2,7 @@
 
 namespace Store.Core.Interfaces
 {
-    public interface IRepository<T> 
+    public interface IRepository<T>
         where T : class
     {
         public T Get(int id);
@@ -14,5 +14,9 @@ namespace Store.Core.Interfaces
         public void Update(T entity);
 
         public void Delete(T entity);
+
+        public IList<T> List(ISpecification<T> specification);
+
+        public T Get(ISpecification<T> specification);
     }
 }

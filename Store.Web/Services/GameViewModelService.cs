@@ -1,9 +1,11 @@
 ﻿using Store.Core.Entities;
 using Store.Core.Interfaces;
+using Store.Core.Specifications;
 using Store.Web.Interfaces;
 using Store.Web.Models;
 using System;
 using System.Collections.Generic;
+using System.Collections;
 using System.Linq;
 
 namespace Store.Web.Services
@@ -19,10 +21,12 @@ namespace Store.Web.Services
         private readonly IRepository<Screenshot> screenshotRepository;
         private readonly IRepository<Game> gameRepository;
         private readonly IGameService gameService;
+        private readonly IUserService userService;
         private readonly IFileStorage fileStorage;
 
-        public GameViewModelService(IRepository<User> userRepository, IRepository<Libriary> libriaryRepository, IRepository<Cart> cartRepository, IFileStorage fileStorage, IRepository<Game> gameRepository, IGameService gameService, IRepository<Image> imageRepository, IRepository<Screenshot> screenshotRepository)
+        public GameViewModelService(IUserService userService, IRepository<User> userRepository, IRepository<Libriary> libriaryRepository, IRepository<Cart> cartRepository, IFileStorage fileStorage, IRepository<Game> gameRepository, IGameService gameService, IRepository<Image> imageRepository, IRepository<Screenshot> screenshotRepository)
         {
+            this.userService = userService;
             this.userRepository = userRepository;
             this.libriaryRepository = libriaryRepository;
             this.cartRepository = cartRepository;
@@ -41,19 +45,7 @@ namespace Store.Web.Services
 
             foreach (var file in game.Files)
             {
-                string imgName = fileStorage.Create(file.OpenReadStream(), jpgExtension, "GameImages");
-                imageRepository.Add(new Image
-                {
-                    Id = 0,
-                    Name = imgName,
-                    Extension = jpgExtension
-                });
-
-                screenshotRepository.Add(new Screenshot
-                {
-                    GameId = id,
-                    ImageId = imageRepository.List().FirstOrDefault(n => n.Name == imgName).Id
-                });
+                gameService.AddScreenShot(file.OpenReadStream(), id);
             }
             return id;
         }
@@ -79,27 +71,27 @@ namespace Store.Web.Services
 
         public IEnumerable<GameViewModel> GetCart(int userId)
         {
-            var cart = cartRepository.List().Where(i => i.UserId == userId);
-            var games = gameRepository.List()
-                .Join(cart, i => i.Id, p => p.GameId, (i, p) => new GameViewModel
-                {
-                    Name = i.Name,
-                    Id = i.Id,
-                    Price = i.Price,
-                    Discont = i.Discont,
-                    Developer = i.Developer,
-                    IsApproved = i.IsApproved,
-                    DeveloperId = i.DeveloperId
-                }).ToList();
-
-            foreach (var game in games)
+            var cart = cartRepository.List(new CartSpecification(userId));
+            var games = new List<GameViewModel>();
+            foreach (var game in cart)
             {
-                var imagesId = screenshotRepository.List().Where(i => i.GameId == game.Id);
-                var images = imageRepository.List()
-                    .Join(imagesId, i => i.Id, p => p.ImageId, (i, p) => new { Name = i.Name + i.Extension })
-                    .Select(n => n.Name)
-                    .ToArray();
-                game.Screenshots = images;
+                var screenshots = screenshotRepository.List(new ScreenshotSpecification(game.Game.Id));
+
+                var images = new List<string>();
+
+                images.AddRange(screenshots.Select(i => $"{i.Image.Name}{i.Image.Extension}"));
+
+                games.Add(new GameViewModel
+                {
+                    Name = game.Game.Name,
+                    Id = game.Game.Id,
+                    Price = game.Game.Price,
+                    Discont = game.Game.Discont,
+                    Developer = game.Game.Developer,
+                    IsApproved = game.Game.IsApproved,
+                    DeveloperId = game.Game.DeveloperId,
+                    Screenshots = images.ToArray()
+                });
             }
 
             return games;
@@ -107,24 +99,20 @@ namespace Store.Web.Services
 
         public ICollection<GameViewModel> SearchGame(string name)
         {
-            return gameRepository.List().Where(n => n.Name == name).Select(ConvertToModel).ToList();
+            return gameRepository.List(new GameByNameSpecification(name)).Select(ConvertToModel).ToList();
         }
 
         public void AddToCart(int userId, int gameId)
         {
-            cartRepository.Add(new Cart
-            {
-                GameId = gameId,
-                UserId = userId
-            });
+            gameService.AddToCart(userId, gameId);
         }
 
         public void BuyFromCart(int userId)
         {
-            var cart = cartRepository.List().Where(i => i.UserId == userId);
+            var cart = cartRepository.List(new CartSpecification(userId));
 
             float price = GetCart(userId).Sum(p => p.Price);
-            var user = userRepository.List().FirstOrDefault(i => i.Id == userId);
+            var user = userRepository.Get(userId);
             if (user.Balance < price)
             {
                 return;
@@ -132,51 +120,43 @@ namespace Store.Web.Services
 
             foreach (var game in cart)
             {
-                libriaryRepository.Add(new Libriary
-                {
-                    UserId = userId,
-                    GameId = game.GameId
-                });
+                gameService.AddToLibriary(game, userId);
 
                 DeleteFromCart(userId, game.GameId);
             }
 
             user.Balance -= price;
-            userRepository.Update(user);
+            userService.Edit(user);
         }
 
         public void DeleteFromCart(int userId, int gameId)
         {
-            cartRepository.Delete(new Cart
-            {
-                UserId = userId,
-                GameId = gameId
-            });
+            gameService.DeleteFromCart(userId, gameId);
         }
 
         public ICollection<GameViewModel> GetLibriary(int userId)
         {
-            var libriary = libriaryRepository.List().Where(i => i.UserId == userId);
-            var games = gameRepository.List()
-                .Join(libriary, i => i.Id, p => p.GameId, (i, p) => new GameViewModel
-                {
-                    Name = i.Name,
-                    Id = i.Id,
-                    Price = i.Price,
-                    Discont = i.Discont,
-                    Developer = i.Developer,
-                    IsApproved = i.IsApproved,
-                    DeveloperId = i.DeveloperId
-                }).ToList();
-
-            foreach (var game in games)
+            var libriary = libriaryRepository.List(new LibriarySpecification(userId));
+            var games = new List<GameViewModel>();
+            foreach(var game in libriary)
             {
-                var imagesId = screenshotRepository.List().Where(i => i.GameId == game.Id);
-                var images = imageRepository.List()
-                    .Join(imagesId, i => i.Id, p => p.ImageId, (i, p) => new { Name = i.Name + i.Extension })
-                    .Select(n => n.Name)
-                    .ToArray();
-                game.Screenshots = images;
+                var screenshots = screenshotRepository.List(new ScreenshotSpecification(game.Game.Id));
+
+                var images = new List<string>();
+
+                images.AddRange(screenshots.Select(i => $"{i.Image.Name}{i.Image.Extension}"));
+
+                games.Add(new GameViewModel
+                {
+                    Name = game.Game.Name,
+                    Id = game.Game.Id,
+                    Price = game.Game.Price,
+                    Discont = game.Game.Discont,
+                    Developer = game.Game.Developer,
+                    IsApproved = game.Game.IsApproved,
+                    DeveloperId = game.Game.DeveloperId,
+                    Screenshots = images.ToArray()
+                });
             }
 
             return games;
@@ -184,7 +164,7 @@ namespace Store.Web.Services
 
         public GameViewModel GetUnapprovedGame()
         {
-            var game = gameRepository.List().FirstOrDefault(b => b.IsApproved == false);
+            var game = gameRepository.List(new UnapprovedGameSpecification()).FirstOrDefault();
             if (game == null)
             {
                 return null;
@@ -195,43 +175,35 @@ namespace Store.Web.Services
 
         public ICollection<GameViewModel> GetGamesByDeveloper(int userId)
         {
-            return gameRepository.List().Where(i => i.DeveloperId == userId).Select(ConvertToModel).ToList();
+            return gameRepository.List(new GamesByDeveloperSpecification(userId)).Select(ConvertToModel).ToList();
         }
 
         public void MakeDiscont(int gameId, float discont)
         {
-            var game = gameRepository.List().FirstOrDefault(i => i.Id == gameId);
+            var game = gameRepository.Get(gameId);
             game.Discont = discont;
-            gameRepository.Update(game);
+            gameService.Edit(game);
         }
 
         public void Approve(int gameId)
         {
-            var game = gameRepository.List().FirstOrDefault(i => i.Id == gameId);
+            var game = gameRepository.Get(gameId);
             game.IsApproved = true;
-            gameRepository.Update(game);
+            gameService.Edit(game);
         }
 
         public void NotApprove(int gameId)
         {
-            var game = gameRepository.List().FirstOrDefault(i => i.Id == gameId);
+            var game = gameRepository.Get(gameId);
 
-            var screenshots = screenshotRepository.List().Where(i => i.GameId == game.Id);
-            var images = imageRepository.List()
-                .Join(screenshots, i => i.Id, p => p.ImageId, (i, p) => new { Name = i.Name, Extension = i.Extension });
-
-            foreach (var image in images)
-            {
-                fileStorage.Delete(image.Name, image.Extension, "GameImages");
-            }
-
+            var screenshots = screenshotRepository.List(new ScreenshotSpecification(gameId));
             foreach (var screenshot in screenshots)
             {
-                var databaseImage = imageRepository.List().FirstOrDefault(i => i.Id == screenshot.ImageId);
-                imageRepository.Delete(databaseImage);
+                var databaseImage = imageRepository.Get(screenshot.ImageId);
+                gameService.DeleteScreenshot(databaseImage);
             }
 
-            gameRepository.Delete(game);
+            gameService.Delete(game);
         }
 
         private GameViewModel ConvertToModel(Game game)
@@ -241,11 +213,11 @@ namespace Store.Web.Services
                 return null;
             }
 
-            var imagesId = screenshotRepository.List().Where(i => i.GameId == game.Id);
-            var images = imageRepository.List()
-                .Join(imagesId, i => i.Id, p => p.ImageId, (i, p) => new { Name = i.Name + i.Extension })
-                .Select(n => n.Name)
-                .ToArray();
+            var screenshots = screenshotRepository.List(new ScreenshotSpecification(game.Id));
+
+            var images = new List<string>();
+
+            images.AddRange(screenshots.Select(i => $"{i.Image.Name}{i.Image.Extension}"));
 
             return new GameViewModel
             {
@@ -256,7 +228,7 @@ namespace Store.Web.Services
                 Developer = game.Developer,
                 IsApproved = game.IsApproved,
                 DeveloperId = game.DeveloperId,
-                Screenshots = images
+                Screenshots = images.ToArray()
             };
         }
 

@@ -1,5 +1,6 @@
 ﻿using Store.Core.Entities;
 using Store.Core.Interfaces;
+using Store.Core.Specifications;
 using Store.Web.Interfaces;
 using Store.Web.Models;
 using System;
@@ -13,9 +14,11 @@ namespace Store.Web.Services
     {
         private readonly IRepository<SupportMessage> messageRepository;
         private readonly IRepository<SupportCase> supportRepository;
+        private readonly ISupportService supportService;
 
-        public SupportViewModelService(IRepository<SupportMessage> messageRepository, IRepository<SupportCase> supportRepository)
+        public SupportViewModelService(ISupportService supportService, IRepository<SupportMessage> messageRepository, IRepository<SupportCase> supportRepository)
         {
+            this.supportService = supportService;
             this.messageRepository = messageRepository;
             this.supportRepository = supportRepository;
         }
@@ -25,7 +28,7 @@ namespace Store.Web.Services
             var supCases = supportRepository.List().Select(ConvertToModel).ToList();
             foreach(var supCase in supCases)
             {
-                supCase.Messages = messageRepository.List().Where(i => i.SupportCaseId == supCase.Id).Select(ConvertToModel).ToList();
+                supCase.Messages = messageRepository.List(new SupportMessageByCaseIdSpecification(supCase.Id)).Select(ConvertToModel).ToList();
             }
 
             return supCases;
@@ -33,10 +36,10 @@ namespace Store.Web.Services
 
         public ICollection<SupportViewModel> GetMyAppeals(int userId)
         {
-            var supCases = supportRepository.List().Where(i => i.InitiatorId == userId).Select(ConvertToModel).ToList();
+            var supCases = supportRepository.List(new SupportCaseByUserIdSpecification(userId)).Select(ConvertToModel).ToList();
             foreach (var supCase in supCases)
             {
-                supCase.Messages = messageRepository.List().Where(i => i.SupportCaseId == supCase.Id).Select(ConvertToModel).ToList();
+                supCase.Messages = messageRepository.List(new SupportMessageByCaseIdSpecification(supCase.Id)).Select(ConvertToModel).ToList();
             }
 
             return supCases;
@@ -44,43 +47,24 @@ namespace Store.Web.Services
 
         public SupportViewModel StartAppeal(int userId)
         {
-            return ConvertToModel(supportRepository.Add(new SupportCase
-            {
-                Id = 0,
-                InitiatorId = userId,
-                Messages = null
-            }));
+            return ConvertToModel(supportService.StartAppeal(userId));
         }
 
         public void SupportMessage(string message, int caseId)
         {
-            messageRepository.Add(new SupportMessage
-            {
-                Id = 0,
-                SupportCaseId = caseId,
-                Time = DateTime.Now,
-                Message = message,
-                MessageType = Core.Entities.Enums.SupportMessageType.Support
-            });
+            supportService.SupportMessage(message, caseId);
         }
 
         public void UserMessage(string message, int caseId)
         {
-            messageRepository.Add(new SupportMessage
-            {
-                Id = 0,
-                SupportCaseId = caseId,
-                Time = DateTime.Now,
-                Message = message,
-                MessageType = Core.Entities.Enums.SupportMessageType.Initiator
-            });
+            supportService.UserMessage(message, caseId);
         }
 
         public SupportViewModel GoToAppeal(int caseId)
         {
-            var supCases = supportRepository.List().FirstOrDefault(i => i.Id == caseId);
+            var supCases = supportRepository.Get(caseId);
             var supCase = ConvertToModel(supCases);
-            supCase.Messages = messageRepository.List().Where(i => i.SupportCaseId == supCase.Id).Select(ConvertToModel).ToList();
+            supCase.Messages = messageRepository.List(new SupportMessageByCaseIdSpecification(supCases.Id)).Select(ConvertToModel).ToList();
 
             return supCase;
         }

@@ -45,6 +45,7 @@ namespace Store.Web
             services.AddScoped<IFileStorage>(provider => new FileStorage(Environment.WebRootPath));
             services.AddScoped<IGameService, GameService>();
             services.AddScoped<IUserService, UserService>();
+            services.AddScoped<ISupportService, SupportService>();
 
             services.AddScoped<IGameViewModelService, GameViewModelService>();
             services.AddScoped<ISupportViewModelService, SupportViewModelService>();

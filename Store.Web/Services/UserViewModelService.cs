@@ -1,5 +1,6 @@
 ﻿using Store.Core.Entities;
 using Store.Core.Interfaces;
+using Store.Core.Specifications;
 using Store.Web.Interfaces;
 using Store.Web.Models;
 using System;
@@ -19,36 +20,32 @@ namespace Store.Web.Services
         private readonly IRepository<Image> imageRepository;
         private readonly IRepository<Member> roleRepository;
         private readonly IRepository<Avatar> avatarRepository;
+        private readonly IRepository<User> userRepository;
         private readonly IUserService userService;
-        private readonly IFileStorage fileStorage;
 
-        public UserViewModelService(IRepository<FriendRequest> friendRepository, IRepository<Image> imageRepository, IRepository<Avatar> avatarRepository, IUserService userService, IPasswordHasher passwordHasher, IRepository<Member> roleRepository, IFileStorage fileStorage)
+        public UserViewModelService(IRepository<User> userRepository, IRepository<FriendRequest> friendRepository, IRepository<Image> imageRepository, IRepository<Avatar> avatarRepository, IUserService userService, IPasswordHasher passwordHasher, IRepository<Member> roleRepository)
         {
+            this.userRepository = userRepository;
             this.friendRepository = friendRepository;
             this.imageRepository = imageRepository;
             this.avatarRepository = avatarRepository;
             this.userService = userService;
             this.passwordHasher = passwordHasher;
             this.roleRepository = roleRepository;
-            this.fileStorage = fileStorage;
         }
 
         public int Add(SignInViewModel signIn)
         {
-            var userId = userService.Add(ConvertToModel(signIn));
-
-            avatarRepository.Add(new Avatar
-            {
-                UserId = userId,
-                ImageId = 24
-            });
-
-            return userId;
+            return userService.Add(ConvertToModel(signIn));
         }
 
         public bool IsLoginUnique(string login)
         {
-            return userService.List().Any(u => u.Login.Equals(login));
+            if (userService.IsLoginUnique(login) == null)
+            {
+                return true;
+            }
+            return false;
         }
 
         public void Edit(EditProfileViewModel userProfile, UserViewModel user)
@@ -60,20 +57,7 @@ namespace Store.Web.Services
             
             if (userProfile.File != null)
             {
-                string imgName = fileStorage.Create(userProfile.File.OpenReadStream(), jpgExtension, "UserAvatar");
-                user.File = userProfile.File;
-                user.Avatar = imgName;
-                imageRepository.Add(new Image
-                {
-                    Id = 0,
-                    Name = imgName,
-                    Extension = jpgExtension
-                });
-                avatarRepository.Add(new Avatar
-                {
-                    UserId = user.Id.Value,
-                    ImageId = imageRepository.List().FirstOrDefault(n => n.Name == imgName).Id
-                });
+                userService.EditAvatar(userProfile.File.OpenReadStream(), user.Id.Value);
             }
 
             userService.Edit(ConvertToModel(user));
@@ -94,9 +78,7 @@ namespace Store.Web.Services
 
         public FriendsViewModel GetFriends(int userId)
         {
-            var friendsRequests = friendRepository.List()
-                .Where(i => i.RequestedById == userId)
-                .Where(s => s.Status == Core.Entities.Enums.FriendRequestStatus.Accepted);
+            var friendsRequests = friendRepository.List(new FriendsRequestSpecification(userId));
 
             var friendsReq = userService.List()
                 .Join(friendsRequests, i => i.Id, p => p.RequestedToId, (i, p) => new UserViewModel
@@ -107,14 +89,12 @@ namespace Store.Web.Services
 
             foreach (var user in friendsReq)
             {
-                var imageId = avatarRepository.List().Where(i => i.UserId == user.Id).Max(i => i.ImageId);
+                var imageId = avatarRepository.List(new UserAvatarSpecification(user.Id.Value)).Max(i => i.ImageId);
                 var userImage = imageRepository.Get(imageId);
                 user.Avatar = userImage != null ? $"{userImage.Name}{userImage.Extension}" : "blank.jpg";
             }
 
-            var friendsReceived = friendRepository.List()
-                .Where(i => i.RequestedToId == userId)
-                .Where(s => s.Status == Core.Entities.Enums.FriendRequestStatus.Accepted);
+            var friendsReceived = friendRepository.List(new FriendsReceiveSpecification(userId));
 
             var friendsRec = userService.List()
                 .Join(friendsReceived, i => i.Id, p => p.RequestedById, (i, p) => new UserViewModel
@@ -125,7 +105,7 @@ namespace Store.Web.Services
 
             foreach (var user in friendsRec)
             {
-                var imageId = avatarRepository.List().Where(i => i.UserId == user.Id).Max(i => i.ImageId);
+                var imageId = avatarRepository.List(new UserAvatarSpecification(user.Id.Value)).Max(i => i.ImageId);
                 var userImage = imageRepository.Get(imageId);
                 user.Avatar = userImage != null ? $"{userImage.Name}{userImage.Extension}" : "blank.jpg";
             }
@@ -143,19 +123,12 @@ namespace Store.Web.Services
 
         public void SendRequest(int userId, int secondUserId)
         {
-            friendRepository.Add(new FriendRequest
-            {
-                RequestedById = userId,
-                RequestedToId = secondUserId,
-                Status = Core.Entities.Enums.FriendRequestStatus.NotAccepted
-            });
+            userService.SendRequest(userId, secondUserId);
         }
 
         public ICollection<UserViewModel> RequestedFriends(int userId)
         {
-            var friendsReceived = friendRepository.List()
-                .Where(i => i.RequestedToId == userId)
-                .Where(s => s.Status == Core.Entities.Enums.FriendRequestStatus.NotAccepted);
+            var friendsReceived = friendRepository.List(new RequestedFriendsSpecification(userId));
 
             var friendsRec = userService.List()
                 .Join(friendsReceived, i => i.Id, p => p.RequestedById, (i, p) => new UserViewModel
@@ -166,7 +139,7 @@ namespace Store.Web.Services
 
             foreach (var user in friendsRec)
             {
-                var imageId = avatarRepository.List().Where(i => i.UserId == user.Id).Max(i => i.ImageId);
+                var imageId = avatarRepository.List(new UserAvatarSpecification(user.Id.Value)).Max(i => i.ImageId);
                 var userImage = imageRepository.Get(imageId);
                 user.Avatar = $"{userImage.Name}{userImage.Extension}";
             }
@@ -176,19 +149,17 @@ namespace Store.Web.Services
 
         public ICollection<UserViewModel> SearchFriend(string nickname)
         {
-            return userService.List().Where(i => i.Nickname == nickname).Select(ConvertToModel).ToList();
+            return userRepository.List(new UserByNicknameSpecification(nickname)).Select(ConvertToModel).ToList();
         }
 
         public void AcceptRequest(int userId, int secondUserId)
         {
-            var request = friendRepository.List().FirstOrDefault(i => i.RequestedById == secondUserId && i.RequestedToId == userId);
-            request.Status = Core.Entities.Enums.FriendRequestStatus.Accepted;
-            friendRepository.Update(request);
+            userService.AcceptRequest(userId, secondUserId);
         }
 
         private UserViewModel ConvertToModel(User user)
         {
-            var imageId = avatarRepository.List().Where(i => i.UserId == user.Id).Max(i => i.ImageId);
+            var imageId = avatarRepository.List(new UserAvatarSpecification(user.Id)).Max(i => i.ImageId);
             var userImage = imageRepository.Get(imageId);
 
             return new UserViewModel
@@ -200,24 +171,12 @@ namespace Store.Web.Services
                 Salt = user.Salt,
                 Balance = user.Balance,
                 Avatar = $"{userImage.Name}{userImage.Extension}",
-                RoleIds = roleRepository.List().Where(i => i.UserId == user.Id).Select(i => i.RoleId).ToArray()
+                RoleIds = roleRepository.List(new UserRolesSpecification(user.Id)).Select(i => i.RoleId).ToArray()
             };
         }
 
         private User ConvertToModel(UserViewModel userViewModel)
         {
-            Image image = new Image();
-
-            if (userViewModel.File != null)
-            {
-                image = new Image
-                {
-                    Stream = userViewModel.File.OpenReadStream(),
-                    Extension = jpgExtension,
-                    Name = userViewModel.Avatar
-                };
-            }
-
             return new User
             {
                 Id = userViewModel.Id.HasValue ? userViewModel.Id.Value : 0,

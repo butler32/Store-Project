@@ -1,0 +1,16 @@
+﻿using Store.Core.Entities;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+
+namespace Store.Core.Interfaces
+{
+    public interface ISupportService
+    {
+        SupportCase StartAppeal(int userId);
+        void SupportMessage(string message, int caseId);
+        void UserMessage(string message, int caseId);
+    }
+}
