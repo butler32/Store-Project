@@ -49,7 +49,7 @@ namespace Store.Core.Services
             screenshotRepository.Add(new Screenshot
             {
                 GameId = id,
-                ImageId = imageRepository.List(new ImageByNameSpecification(imgName)).FirstOrDefault().Id
+                ImageId = imageRepository.Get(new ImageByNameSpecification(imgName)).Id
             });
         }
 
